@@ -5,6 +5,12 @@ import csv
 from datetime import datetime
 import os
 
+from download_model import download_model
+
+# Download model if not already present
+download_model()
+
+
 # Background styling
 page_bg_img = '''
 <style>
