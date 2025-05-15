@@ -4,6 +4,7 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification, pipelin
 import csv
 from datetime import datetime
 import os
+import torch
 
 from download_model import download_model
 
@@ -36,7 +37,10 @@ model = AutoModelForTokenClassification.from_pretrained(model_path, config=confi
 
 
 # Token classification pipeline without aggregation
-nlp_pipeline = pipeline("token-classification", model=model, tokenizer=tokenizer, aggregation_strategy=None)
+device = torch.device("cpu")
+model.to(device)
+
+nlp_pipeline = pipeline("token-classification", model=model, tokenizer=tokenizer, device=-1, aggregation_strategy=None)
 
 # CSV logging function
 def log_interaction(user_input, predictions, log_file='interaction_logs.csv'):
