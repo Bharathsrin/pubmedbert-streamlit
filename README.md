@@ -1,12 +1,6 @@
-# Biomedical Abbreviation & Long Form Detector
+## Download the Model
 
-This is a Streamlit app built using a fine-tuned **PubMedBERT** model for detecting biomedical **abbreviations (AC)** and their **long forms (LF)** using token classification with BIO tagging.
+The model file `pytorch_model.bin` is too large for GitHub.  
+You can download it from Google Drive using the link below:
 
----
-
-## 🚀 How to Run Locally
-
-1. **Clone the Repository**  
-```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+[Download pytorch_model.bin](https://drive.google.com/file/d/1M-i8hQOt9JMICttv2eFYXFqbaJorcuIJ/view?usp=sharing)
