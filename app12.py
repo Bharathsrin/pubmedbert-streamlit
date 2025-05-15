@@ -1,18 +1,24 @@
-
 import streamlit as st
-from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 import csv
 from datetime import datetime
 import os
-import torch
+
+# Disable RTSDP (fixes meta tensor bug in PyTorch >=2.1)
+os.environ["PYTORCH_USE_RTSDP"] = "0"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 from download_model import download_model
+from transformers import (
+    AutoTokenizer,
+    AutoModelForTokenClassification,
+    AutoConfig,
+    pipeline
+)
 
-# Download model if not already present
+# 📥 Download model if not already present
 download_model()
 
-
-# Background styling
+# 🎨 Background styling
 page_bg_img = '''
 <style>
 body {
@@ -24,26 +30,25 @@ body {
 '''
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Title
-st.title(" Token Classification Web App")
+# 📌 App title
+st.title("🧠 Token Classification Web App")
 
-# Load model and tokenizer
-from transformers import AutoModelForTokenClassification, AutoTokenizer, AutoConfig
-
+# 🔧 Load model and tokenizer
 model_path = "."
 config = AutoConfig.from_pretrained(model_path)
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = AutoModelForTokenClassification.from_pretrained(model_path, config=config)
 
+# 🔍 Set up pipeline (no manual .to(device) needed)
+nlp_pipeline = pipeline(
+    "token-classification",
+    model=model,
+    tokenizer=tokenizer,
+    aggregation_strategy=None,
+    device=-1
+)
 
-# Token classification pipeline without aggregation
-# DO NOT manually call model.to(device)
-# Let HuggingFace handle it internally in the pipeline
-
-
-nlp_pipeline = pipeline("token-classification", model=model, tokenizer=tokenizer, device=-1, aggregation_strategy=None)
-
-# CSV logging function
+# 📄 Logging function
 def log_interaction(user_input, predictions, log_file='interaction_logs.csv'):
     log_file_path = os.path.join(os.getcwd(), log_file)
     fieldnames = ['timestamp', 'user_input', 'predictions']
@@ -58,13 +63,10 @@ def log_interaction(user_input, predictions, log_file='interaction_logs.csv'):
                 writer.writeheader()
 
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-            # Create a single string from predictions
             predictions_str = "; ".join([
-    f"{entity['word']} ({entity.get('entity', 'N/A')}, {entity['score']:.4f})"
-    for entity in predictions
-])
-
+                f"{entity['word']} ({entity.get('entity', 'N/A')}, {entity['score']:.4f})"
+                for entity in predictions
+            ])
 
             writer.writerow({
                 'timestamp': timestamp,
@@ -77,17 +79,18 @@ def log_interaction(user_input, predictions, log_file='interaction_logs.csv'):
         st.error(f"Log saving error: {e}")
         return None
 
-# Clear log button
-if st.button(" Clear CSV Log"):
+# 🧹 Clear log
+if st.button("🗑️ Clear CSV Log"):
     log_file_path = os.path.join(os.getcwd(), 'interaction_logs.csv')
     with open(log_file_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['timestamp', 'user_input', 'predictions'])
-    st.success("Interaction log cleared!")
+    st.success("✅ Interaction log cleared!")
 
-# User input
+# ✍️ Input
 user_input = st.text_area("✍️ Enter your sentence:")
 
+# 🔍 Prediction
 if st.button("🔍 Analyze"):
     if user_input.strip():
         results = nlp_pipeline(user_input)
@@ -99,11 +102,11 @@ if st.button("🔍 Analyze"):
             'score': round(entity.get('score', 0.0), 4)
         } for entity in results]
 
-        # Show tokenized input (for debug or verification)
+        # Show tokens
         tokens = tokenizer.tokenize(user_input)
         st.markdown(f"**🧬 Tokens:** `{tokens}`")
 
-        # Save logs and get the file path
+        # Save logs
         log_filename = 'interaction_logs.csv'
         log_file_path = log_interaction(user_input, predictions, log_filename)
 
@@ -112,14 +115,14 @@ if st.button("🔍 Analyze"):
                 log_file_content = file.read()
 
             st.download_button(
-                label="Download Interaction Log (CSV)",
+                label="📥 Download Interaction Log (CSV)",
                 data=log_file_content,
                 file_name=log_filename,
                 mime="text/csv"
             )
 
-        # Display results
-        st.markdown("## Prediction Results")
+        # Show predictions
+        st.markdown("## 🔎 Prediction Results")
         for entity in predictions:
             html_output = f'''
             <div style='padding: 10px; background-color: rgba(0, 128, 255, 0.2); border-radius: 10px; margin-bottom: 8px;'>
@@ -130,4 +133,4 @@ if st.button("🔍 Analyze"):
             '''
             st.markdown(html_output, unsafe_allow_html=True)
     else:
-        st.warning("⚠️ Please enter some text.") 
+        st.warning("⚠️ Please enter some text.")
