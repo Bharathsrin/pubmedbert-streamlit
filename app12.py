@@ -24,12 +24,16 @@ body {
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Title
-st.title("🧠 Token Classification Web App")
+st.title(" Token Classification Web App")
 
 # Load model and tokenizer
-model_path = "C:/Users/vagow/OneDrive/Desktop/Msc folder/NLP/pubmedbert_model"
-model = AutoModelForTokenClassification.from_pretrained(model_path, local_files_only=True)
-tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
+from transformers import AutoModelForTokenClassification, AutoTokenizer, AutoConfig
+
+model_path = "."
+config = AutoConfig.from_pretrained(model_path)
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+model = AutoModelForTokenClassification.from_pretrained(model_path, config=config)
+
 
 # Token classification pipeline without aggregation
 nlp_pipeline = pipeline("token-classification", model=model, tokenizer=tokenizer, aggregation_strategy=None)
@@ -69,7 +73,7 @@ def log_interaction(user_input, predictions, log_file='interaction_logs.csv'):
         return None
 
 # Clear log button
-if st.button("🗑️ Clear CSV Log"):
+if st.button(" Clear CSV Log"):
     log_file_path = os.path.join(os.getcwd(), 'interaction_logs.csv')
     with open(log_file_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
@@ -110,7 +114,7 @@ if st.button("🔍 Analyze"):
             )
 
         # Display results
-        st.markdown("## 🧾 Prediction Results")
+        st.markdown("## Prediction Results")
         for entity in predictions:
             html_output = f'''
             <div style='padding: 10px; background-color: rgba(0, 128, 255, 0.2); border-radius: 10px; margin-bottom: 8px;'>
