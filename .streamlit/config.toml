@@ -1,0 +1,20 @@
+[global]
+disableWatchdogWarning = true
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+
+[theme]
+base="dark"
+
+[runner]
+fastReruns = false
+
+[client]
+showSidebarNavigation = false
+
+[env]
+PYTORCH_USE_RTSDP = "0"
+
