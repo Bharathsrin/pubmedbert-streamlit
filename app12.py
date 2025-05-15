@@ -37,8 +37,9 @@ model = AutoModelForTokenClassification.from_pretrained(model_path, config=confi
 
 
 # Token classification pipeline without aggregation
-device = torch.device("cpu")
-model.to(device)
+# DO NOT manually call model.to(device)
+# Let HuggingFace handle it internally in the pipeline
+
 
 nlp_pipeline = pipeline("token-classification", model=model, tokenizer=tokenizer, device=-1, aggregation_strategy=None)
 
